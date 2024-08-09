@@ -1,0 +1,5 @@
+[Fri Aug  9 15:01:37 2024] >> == START ==
+[Fri Aug  9 15:01:37 2024] >> tensorflow version: 2.17.0
+[Fri Aug  9 15:01:39 2024] >> #images: [717, 52, 2560, 1792]
+[Fri Aug  9 15:06:29 2024] >> Test Loss: 0.9986
+[Fri Aug  9 15:06:29 2024] >> Test AUC: 0.8414

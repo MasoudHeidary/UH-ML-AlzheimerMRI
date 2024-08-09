@@ -30,7 +30,7 @@ l.println(f"tensorflow version: {tf.__version__}")
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 BATCH_SIZE = 16 * strategy.num_replicas_in_sync
 IMAGE_SIZE = [176, 208]
-EPOCHS = 250
+EPOCHS = 100
 
 
 # loading train and test data
@@ -164,7 +164,7 @@ def exponential_decay(lr0, s):
 exponential_decay_fn = exponential_decay(0.01, 20)
 lr_scheduler = tf.keras.callbacks.LearningRateScheduler(exponential_decay_fn)
 checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("alzheimer_model.keras", save_best_only=True)
-early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
+early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=15, restore_best_weights=True)
 
 
 history = model.fit(
@@ -188,9 +188,13 @@ for i, met in enumerate(['auc', 'loss']):
     ax[i].set_xlabel('epochs', fontsize=28, fontweight='bold')
     ax[i].set_ylabel(met, fontsize=28, fontweight='bold')
 
+    ax[i].tick_params(axis='x', labelsize=28)
+    ax[i].tick_params(axis='y', labelsize=28)
+    for label in ax[i].get_xticklabels():
+        label.set_fontweight('bold')
+    for label in ax[i].get_yticklabels():
+        label.set_fontweight('bold')
     ax[i].legend(['train', 'val'], fontsize=28)
-    plt.xticks(fontsize=28, fontweight='bold')
-    plt.yticks(fontsize=28, fontweight='bold')
 plt.show()
 
 
