@@ -167,35 +167,36 @@ checkpoint_cb = tf.keras.callbacks.ModelCheckpoint("alzheimer_model.keras", save
 early_stopping_cb = tf.keras.callbacks.EarlyStopping(patience=15, restore_best_weights=True)
 
 
-history = model.fit(
-    train_ds,
-    validation_data=val_ds,
-    callbacks=[checkpoint_cb, early_stopping_cb, lr_scheduler],
-    epochs=EPOCHS
-)
+# train
+if False:
+    history = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        callbacks=[checkpoint_cb, early_stopping_cb, lr_scheduler],
+        epochs=EPOCHS
+    )
 
 
+    # plot the accuracy and loss
+    fig, ax = plt.subplots(1, 2, figsize=(20, 8))
+    ax = ax.ravel()
 
-# plot the accuracy and loss
-fig, ax = plt.subplots(1, 2, figsize=(20, 8))
-ax = ax.ravel()
+    for i, met in enumerate(['auc', 'loss']):
+        ax[i].plot(history.history[met], linewidth=5)
+        ax[i].plot(history.history['val_' + met], linewidth=5)
 
-for i, met in enumerate(['auc', 'loss']):
-    ax[i].plot(history.history[met], linewidth=5)
-    ax[i].plot(history.history['val_' + met], linewidth=5)
+        ax[i].set_title('Model {}'.format(met), fontsize=28, fontweight='bold')
+        ax[i].set_xlabel('epochs', fontsize=28, fontweight='bold')
+        ax[i].set_ylabel(met, fontsize=28, fontweight='bold')
 
-    ax[i].set_title('Model {}'.format(met), fontsize=28, fontweight='bold')
-    ax[i].set_xlabel('epochs', fontsize=28, fontweight='bold')
-    ax[i].set_ylabel(met, fontsize=28, fontweight='bold')
-
-    ax[i].tick_params(axis='x', labelsize=28)
-    ax[i].tick_params(axis='y', labelsize=28)
-    for label in ax[i].get_xticklabels():
-        label.set_fontweight('bold')
-    for label in ax[i].get_yticklabels():
-        label.set_fontweight('bold')
-    ax[i].legend(['train', 'val'], fontsize=28)
-plt.show()
+        ax[i].tick_params(axis='x', labelsize=28)
+        ax[i].tick_params(axis='y', labelsize=28)
+        for label in ax[i].get_xticklabels():
+            label.set_fontweight('bold')
+        for label in ax[i].get_yticklabels():
+            label.set_fontweight('bold')
+        ax[i].legend(['train', 'val'], fontsize=28)
+    plt.show()
 
 
 
@@ -208,6 +209,11 @@ test_ds = tf.keras.preprocessing.image_dataset_from_directory(
 test_ds = test_ds.map(one_hot_label, num_parallel_calls=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
+
+# load the model
+model = tf.keras.models.load_model("alzheimer_model.keras")
+
+
 # Evaluate the model on the test set
 test_loss, test_auc = model.evaluate(test_ds)
 l.println(f"Test Loss: {test_loss:.4f}")
@@ -216,32 +222,36 @@ l.println(f"Test AUC: {test_auc:.4f}")
 
 
 # # Function to get true labels and predictions
-# def get_labels_and_predictions(dataset):
-#     true_labels = []
-#     predictions = []
-#     images_list = []
-#     for images, labels in dataset:
-#         preds = model.predict(images)
-#         true_labels.extend(labels.numpy())
-#         predictions.extend(preds)
-#         images_list.extend(images.numpy())
-#     return np.array(true_labels), np.array(predictions), np.array(images_list)
+def get_labels_and_predictions(dataset):
+    true_labels = []
+    predictions = []
+    images_list = []
+    for images, labels in dataset:
+        preds = model.predict(images)
+        true_labels.extend(labels.numpy())
+        predictions.extend(preds)
+        images_list.extend(images.numpy())
+    return np.array(true_labels), np.array(predictions), np.array(images_list)
 
-# # Get true labels, predictions, and images for the test set
-# true_labels, predictions, images_list = get_labels_and_predictions(test_ds)
+# Get true labels, predictions, and images for the test set
+true_labels, predictions, images_list = get_labels_and_predictions(test_ds)
 
-# # Convert one-hot encoded labels to class indices
-# true_labels_indices = np.argmax(true_labels, axis=1)
-# predictions_indices = np.argmax(predictions, axis=1)
+# Convert one-hot encoded labels to class indices
+true_labels_indices = np.argmax(true_labels, axis=1)
+predictions_indices = np.argmax(predictions, axis=1)
 
-# # Display the first 50 predictions and true labels
-# plt.figure(figsize=(20, 20))
-# for i in range(50):
-#     ax = plt.subplot(10, 5, i + 1)
-#     plt.imshow(images_list[i].astype("uint8"))
-#     plt.title(f"True: {class_names[true_labels_indices[i]]}\nPred: {class_names[predictions_indices[i]]}")
-#     plt.axis("off")
 
-# plt.tight_layout()
-# plt.show()
+# Find indices where the prediction is correct
+# correct_indices = np.where(true_labels_indices == predictions_indices)[0]
+
+# Display the first 5 predictions and true labels
+plt.figure(figsize=(13, 10))
+for index, i in enumerate(range(5)):
+    ax = plt.subplot(1, 5, index + 1)
+    plt.imshow(images_list[i].astype("uint8"))
+    plt.title(f"True: {class_names[true_labels_indices[i]]}\nPred: {class_names[predictions_indices[i]]}", fontsize=28, fontweight='bold')
+    plt.axis("off")
+
+plt.tight_layout()
+plt.show()
 
