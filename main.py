@@ -30,7 +30,7 @@ l.println(f"tensorflow version: {tf.__version__}")
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 BATCH_SIZE = 16 * strategy.num_replicas_in_sync
 IMAGE_SIZE = [176, 208]
-EPOCHS = 10
+EPOCHS = 250
 
 
 # loading train and test data
